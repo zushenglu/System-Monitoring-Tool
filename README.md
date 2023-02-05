@@ -8,7 +8,7 @@ I stared with the big picture of the program like how it should be structed and 
   - The problem is that user may input invalid argument. For arguments does not involve number, I use strcpr. For those that does involve number, I compared the prefix then used the idea of DFA to make sure the numbers are valid; start at initial state and change it accordingly as it reads the argument which will be used to evaluate the validity of the imput by wether or not it ends on an accepting state. Since we are reading digit by digit from large to small, we can calculate the input value by calculating the sum of each digit times the weight of its decial place . i.e 123 = 1 * 10^2 + 2 * 10^2 + 1 * 10^0).
   - The program should take stackable arugments in any order. I simply use array with specific definition for each valid arguments (table below). the prgram can easily decide what to print based on the value on specific index.
  
-      | index | representation | Describtion |
+      | index | representation | Description |
       | --- | --- | --- |
       | 1 | --system | default value = 0, if arguement detected: 1|
       | 2 | --user | default value = 0, if arguement detected: 1 |
@@ -70,3 +70,16 @@ The rest are refreshing for each iteration but we do not need to memorize the re
 |void refresh(int *funcArray, int iteration, double **allMemInfo, unsigned long long * lastIdle, unsigned long long * lastTotal, unsigned long long * thisIdle, unsigned long long * thisTotal)|displays the information according to user input. `funcArray` contains users input. `iteration` is the number of samples the program has completed, `allMemInfo` points to the array that records all the memory info that has been sampled. The rest are the pointers to the cpu time needed to calculate cpu usage|
 |void displaySysInfo()| prints device information at the end of all sampleing. create `utsname` structure and extract information to print|
 
+### User Instruction
+  1. goto the direction on terminal.
+  2. type `cd c1.c -lm -o systeminfo` to compile
+  3. type `./systeminfo` to run the program with 0 or more of the following flag(s):
+  
+        | flag| Description |
+      | --- | --- |
+      | `--system` | display system memory usage |
+      | `--user` | display system user info |
+      | ~--graphics~ | ~adds graphics to cpu usage and memory info (currently not avaliable)~|
+      | `--sequential` | display information one after another (gives you access to all information produced) |
+      |  `--saples=N` | determines how many samples the program needs to do. When using it, swap N for any positive Natural number, default value is 10|
+      | `--tdelay=N` | determines how long should the program wait before making another sample. When using it, swap N for any positive Natural number, default value is 10|
