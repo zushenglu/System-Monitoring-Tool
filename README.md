@@ -75,7 +75,7 @@ The rest are refreshing for each iteration but we do not need to memorize the re
   2. type `cd c1.c -lm -o systeminfo` to compile
   3. type `./systeminfo` to run the program with 0 or more of the following flag(s):
   
-        | flag| Description |
+      | flag| Description |
       | --- | --- |
       | `--system` | display system memory usage |
       | `--user` | display system user info |
@@ -83,3 +83,5 @@ The rest are refreshing for each iteration but we do not need to memorize the re
       | `--sequential` | display information one after another (gives you access to all information produced) |
       |  `--saples=N` | determines how many samples the program needs to do. When using it, swap N for any positive Natural number, default value is 10|
       | `--tdelay=N` | determines how long should the program wait before making another sample. When using it, swap N for any positive Natural number, default value is 10|
+  
+
