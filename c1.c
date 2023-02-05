@@ -15,16 +15,6 @@
  #include <unistd.h>
 
 
-/*
-ssh luzushen@iits-b473-13.utsc-labs.utoronto.ca
-
-scp -pr ~/Desktop/winter_23/csc209/A1/c1.c luzushen@iits-b473-02.utsc-labs.utoronto.ca:~/cscb09w23_space/a1/test
-scp -pr ~/Desktop/winter_23/csc209/A1/test.c luzushen@iits-b473-02.utsc-labs.utoronto.ca:~/cscb09w23_space/a1/test
-scp -pr ~/Desktop/winter_23/csc209/A1/code.c luzushen@iits-b473-02.utsc-labs.utoronto.ca:~/cscb09w23_space/a1/test
-
-
-01809714711Lp!
-*/
 
 // does arguments stack?    yes, all of them, use getopt
 // range for N in samples and tdelay? N+
