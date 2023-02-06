@@ -531,7 +531,7 @@ void printAllUserInfo(){
     printDivider();
 }
 
-int refresh(int *funcArray, int iteration, double **allMemInfo, 
+void refresh(int *funcArray, int iteration, double **allMemInfo, 
             unsigned long long * lastIdle, unsigned long long * lastTotal, 
             unsigned long long * thisIdle, unsigned long long * thisTotal){
 
