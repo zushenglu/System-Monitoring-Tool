@@ -72,7 +72,7 @@ The rest are refreshing for each iteration but we do not need to memorize the re
 
 ### User Instruction
   1. goto the direction on terminal.
-  2. type `cd c1.c -lm -o systeminfo` to compile
+  2. type `gcc c1.c -lm -o systeminfo` to compile
   3. type `./systeminfo` to run the program with 0 or more of the following flag(s):
   
       | flag| Description |
