@@ -14,27 +14,6 @@
 #include <time.h>
  #include <unistd.h>
 
-
-
-// does arguments stack?    yes, all of them, use getopt
-// range for N in samples and tdelay? N+
-// do we memorize N? not across multiple calls
-// how to display information: erase function -> erase everything and reprint them to show new information
-// where to start?
-// how do I do the thing shown in the demo?
-
-// what if theres two same stuff in 1 command eg --system --system, --samples=1 --samples=100
-    // error message? --> no need to deal with the rn, assume every input is valid
-    // how should we deal with it? --> doesn't matter as long the code works with valid code (no repeat)
-
-// if there a specific order for arguments? -> in order given in quercus pic
-    // if given --system --user do I print same thing as give --user --system? -> yes
-
-// anything specific on the gap in graphics of memory or num of core
-
-// for Memory usage: 4092 kilobytes, do we need to find optimal unit st the number is in 4 decimal place?
-
-
 // print all arguments given
 void showArg(int argNum, char *argument[]){
 
@@ -50,9 +29,7 @@ int matchItem(char *argument, char *string_to_match, int prefix_len){
 
     int i = 0;
 
-    // printf("given: %s\nmatch: %s\n", argument, string_to_match);
-    // printf("%d\n", prefix_len);
-    // match prefix (prefix=)
+    // match prefix ("prefix=")
     while (*(argument+i) != '\0' && i < prefix_len){
         if (*(argument+i) != *(string_to_match+i)){
             // printf("argument match %s failed\n", string_to_match);
@@ -61,7 +38,7 @@ int matchItem(char *argument, char *string_to_match, int prefix_len){
         i++;
     }
 
-    // match N (--samples=N)
+    // match N (prefix=N) using DFA
     int sampleN = 0;
     int state = 0;
     while (*(argument+i) != '\0'){
@@ -87,8 +64,6 @@ int matchItem(char *argument, char *string_to_match, int prefix_len){
         return -1;
     }
 
-    // printf("finishing state: %d\n", state);
-
     return i;
 }
 
@@ -105,8 +80,7 @@ int extractN(char *argument, int prefix_len, int arg_len){
     return n;
 }
 
-// reads arguments and decide which info is needed
-// modified 
+// reads arguments and decide which info needs to be modified 
 void processArg(int argNum, char *argument[], int *funcArr, int SP, int TP){
 
     int i=1;
@@ -241,8 +215,6 @@ double getTotVirtuallMemory(struct sysinfo sys_info, int resultUnit){
     long totVir = totPhy + totSwap;
     double totVirUnit = conversionB(totVir, resultUnit);
 
-    // printf("total vir ram: %lf\n", totVirUnit);
-    // long usedPhy = getUsedMemory(sys_info, resultUnit);
     return totVirUnit;
 }
 
@@ -254,20 +226,11 @@ double getUsedVirtualMemory(struct sysinfo sys_info, int resultUnit){
 
     double usedPhy = sys_info.totalram - sys_info.freeram;
     double usedSwap = sys_info.totalswap - sys_info.freeswap;
-    double usedVir = totVir * 1.0 - usedPhy - usedSwap;
+    double usedVir = usedPhy + usedSwap;
     double usedVirUnit = conversionB(usedVir, resultUnit);
 
-    // printf("used vir ram: %lf\n", usedVirUnit);
-    // long usedPhy = getUsedMemory(sys_info, resultUnit);
     return usedVirUnit;
 }
-
-/*
-// print ramNode information
-void printCurrentRamData(ramNode *node){
-    printf("%.0lf GB / %.0lf GB  -- %.0lf GB / %.0lf GB\n", node->usedPhyRam, node->totPhyRam, node->usedVirRam, node->totVirRam);
-}
-*/
 
 // return array containing memory info needed for this moment, also print them in desired format
 double* getCurMemInfo(struct sysinfo sys_info, int resultUnit){
@@ -339,14 +302,14 @@ void printAllMemInfo(double* allMemInfo[], int iteration, int sn, int sequencial
 
 // update idle time
 void sampleTime(unsigned long long * lastIdle, unsigned long long * lastTotal, unsigned long long * thisIdle, unsigned long long * thisTotal){
-   
-   FILE *fptr;
-   
-   fptr = fopen("/proc/stat","r");
-   if (fptr == NULL){
-    printf("file cannot be found");
-    return;
-   }
+
+    FILE *fptr;
+
+    fptr = fopen("/proc/stat","r");
+    if (fptr == NULL){
+     printf("file cannot be found");
+     return;
+    }
 
     unsigned long long totalTime = 0;
     unsigned long long  idleTime = 0;
@@ -354,95 +317,51 @@ void sampleTime(unsigned long long * lastIdle, unsigned long long * lastTotal, u
     char buffer[1024];
 
 
-        fscanf(fptr, "%s", buffer);
-            // printf("temp going to be added: %ld\n", temp);
+    // extract times and calculate the sum
+    fscanf(fptr, "%s", buffer);
 
-                // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
 
-        // printf("%s info:\n", buffer);
-            fscanf(fptr, "%s", buffer);
-        temp = strtol(buffer, NULL, 10);
-        totalTime = totalTime + temp;
-            // printf("temp going to be added: %ld\n", temp);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
 
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
 
-        // printf("user time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime + temp;
-            // printf("temp going to be added: %ld\n", temp);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
 
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
+    fscanf(fptr, "%s", buffer);
 
-        // printf("nice time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime + temp;
-            // printf("temp going to be added: %ld\n", temp);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
+    idleTime = idleTime + temp;
 
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
 
-        // printf("system time:%s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            // printf("error here: scanned: %s, given number : %ld\n", buffer, strtol(buffer, NULL, 10));
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime + temp;
-            idleTime = idleTime + temp;
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime + temp;
+ 
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime +temp;
 
-            // printf("temp going to be added: %ld\n", temp);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime +temp;
 
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("idle time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime + temp;
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("iowait time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime + temp;
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("irq time:%s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime +temp;
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("softirq time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime +temp;
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("steal time: %s\n", buffer);
-            fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            // printf("temp going to be added: %ld\n", temp);
-            totalTime = totalTime +temp;
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
-
-        // printf("guest time:%s\n", buffer);
-                fscanf(fptr, "%s", buffer);
-            temp = strtol(buffer, NULL, 10);
-            totalTime = totalTime +temp;
-
-            // printf("temp going to be added: %ld\n", temp);
-
-        // printf("idleTime: %llu, totalTime: %llu\n", idleTime, totalTime);
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime +temp;
+ 
+    fscanf(fptr, "%s", buffer);
+    temp = strtol(buffer, NULL, 10);
+    totalTime = totalTime +temp;
 
     if (*thisTotal==-1) {
         *thisIdle = idleTime;
@@ -454,8 +373,6 @@ void sampleTime(unsigned long long * lastIdle, unsigned long long * lastTotal, u
         *thisIdle = idleTime;
         *thisTotal = totalTime;
     }
-    // printf("lastIdle: %llu, lasdtTotal: %llu, thisIdle: %llu, thisTotal: %llu\n", *lastIdle, *lastTotal, *thisIdle, *thisTotal);
-
     fclose(fptr);
     return;
 }
@@ -527,7 +444,7 @@ void printAllUserInfo(){
         
         user_tmp = getutent();
     }
-    // free(user_tmp);
+    
     printDivider();
 }
 
@@ -543,8 +460,6 @@ void refresh(int *funcArray, int iteration, double **allMemInfo,
     struct rusage res_usage; // for current res used
     getrusage(RUSAGE_SELF, &res_usage);
     printProgramInfo(funcArray[5], funcArray[6], res_usage); // programinfo no need linkedlist, since only 1 item refresh
-
-    // printFunc(funcArray,0,0);
 
     if (funcArray[1] == 1 || funcArray[2] == 0){
            // p2    
@@ -586,23 +501,14 @@ int main(int argNum, char *argument[]){
     int SP = 10; // lenght of s's prefix
     int TP = 9;  // length of p's prefix
 
-    // showArg(argNum, argument);
 
-    /*
-    // if no argument, print everything
-    if (argNum==1){
-        return 0;
-    }
-    */
-
-// argument handeling
+    // argument handeling
     int *funcArray = (int*)calloc(7, sizeof(int)); // for argArray detail, follow notes
-    funcArray[5] = 10; funcArray[6] = 1; // set up default value for the thing
-    processArg(argNum, argument, funcArray, SP, TP);
-    // printFunc(funcArray,0,0); // second and thrid are placeholder, not required but mice to implement
-    double **allMemInfo = setupMemInfoArray(funcArray[5]); 
+    funcArray[5] = 10; funcArray[6] = 1; // set up default value for certain flag
+    processArg(argNum, argument, funcArray, SP, TP); // process argument
+    double **allMemInfo = setupMemInfoArray(funcArray[5]); // setup memory info
 
-    // set up pointer to calculate cpu interval
+    // set up pointers to calculate cpu interval
     unsigned long long *thisIdle = calloc(sizeof(unsigned long long), 1);
     unsigned long long *thisTotal = calloc(sizeof(unsigned long long), 1);
     unsigned long long *lastIdle = calloc(sizeof(unsigned long long), 1);
@@ -624,6 +530,8 @@ int main(int argNum, char *argument[]){
     }
     
     displaySysInfo();
+ 
+    free(funcArray);
 
     return 0;
 }
